@@ -98,6 +98,10 @@ app.get('/verify', (req, res) => {
     return res.json({ valid: true });
 });
 
+app.get('/', (req, res) => {
+    res.redirect('/join');
+});
+
 app.listen(PORT, () => {
     console.log(`Waiting Room backend running on port ${PORT}`);
 });
