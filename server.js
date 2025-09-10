@@ -1,12 +1,16 @@
 import express from 'express';
 import cors from 'cors';
+import cookieParser from 'cookie-parser';
 import {v4 as uuidv4} from 'uuid';
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-app.use(cors());
+// Configuration de CORS pour autoriser les cookies
+app.use(cors({ origin: 'http://127.0.0.1:5500', credentials: true }));
+
 app.use(express.json());
+app.use(cookieParser());
 
 // Limite simultanée
 const MAX_USERS = 200;
@@ -64,7 +68,7 @@ app.get('/join', (req, res) => {
 
 // Endpoint pour quitter / libérer une place
 app.get('/leave', (req, res) => {
-    const userId = req.userId;
+    const userId = req.queueId; // Corrigé: req.userId -> req.queueId
 
     if (activeUsers.has(userId)) {
         activeUsers.delete(userId);

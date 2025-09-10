@@ -1,53 +1,60 @@
+
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-<meta charset="UTF-8">
-<title>Waiting Room</title>
-<style>
-body { font-family: sans-serif; text-align: center; padding: 50px; }
-#message { font-size: 1.5em; margin-top: 20px; }
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Salle d'attente - Blandin & Delloye</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Roboto:wght@300;400&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
-<h1>Bienvenue !</h1>
-<p>Le site est très sollicité, merci de patienter...</p>
-<p id="message">Chargement...</p>
 
-<script>
-const USER_ID = 'user-' + Math.random().toString(36).substr(2, 9);
-const API = 'https://backend.mondomaine.com'; // ton backend OVH
+    <div class="container">
+        <div class="brand-name">Blandin & Delloye</div>
+        
+        <div class="message-box">
+            <h1>Vous êtes presque arrivé</h1>
+            <p>Afin de vous offrir la meilleure expérience possible, nous régulons l'accès à notre site en période de forte affluence. Merci de votre patience.</p>
+            <div id="status-message">Calcul de votre position...</div>
+            <div class="loader"></div>
+        </div>
+    </div>
 
-async function checkStatus() {
-    try {
-        const res = await fetch(`${API}/join`, {
-            method: 'POST',
-            headers: { 'x-user-id': USER_ID }
-        });
-        const data = await res.json();
+    <script>
+        const API = 'http://localhost:3000'; // URL du backend
 
-        if (data.status === 'allowed') {
-            // Redirection vers site final avec token
-            window.location.href = `https://www.mondomaine.com/?token=${data.token}`;
-        } else if (data.status === 'queued') {
-            document.getElementById('message').innerText = 
-                `Vous êtes en attente. Position : ${data.position}`;
-            setTimeout(checkStatus, 3000); // Re-check toutes les 3 sec
+        async function checkStatus() {
+            try {
+                const res = await fetch(`${API}/join`, {credentials: 'include'});
+                const data = await res.json();
+
+                if (data.status === 'allowed') {
+                    document.querySelector('.loader').style.display = 'none';
+                    document.getElementById('status-message').innerText = "Accès autorisé. Vous allez être redirigé...";
+                    // Exemple de redirection. Décommentez et adaptez pour votre site.
+                    // window.location.href = `https://www.votresite.com/?token=${data.token}`;
+                    console.log(`Redirection avec token : ${data.token}`);
+                } else if (data.status === 'queued') {
+                    document.getElementById('status-message').innerText = 
+                        `Votre position dans la file d'attente : ${data.position}`;
+                    setTimeout(checkStatus, 5000); // Re-vérification toutes les 5 sec
+                }
+            } catch (err) {
+                console.error("Erreur de connexion au serveur:", err);
+                document.getElementById('status-message').innerText = "Impossible de joindre le service. Nouvel essai dans 10 secondes.";
+                setTimeout(checkStatus, 10000); // Réessayer en cas d'erreur
+            }
         }
-    } catch (err) {
-        console.error(err);
-        setTimeout(checkStatus, 5000); // retry en cas d'erreur
-    }
-}
 
-checkStatus();
+        window.addEventListener('load', checkStatus);
 
-// Libération de place quand l’utilisateur ferme la page
-window.addEventListener('beforeunload', async () => {
-    await fetch(`${API}/leave`, {
-        method: 'POST',
-        headers: { 'x-user-id': USER_ID }
-    });
-});
-</script>
+        window.addEventListener('beforeunload', () => {
+            navigator.sendBeacon(`${API}/leave`);
+        });
+    </script>
+
 </body>
 </html>
