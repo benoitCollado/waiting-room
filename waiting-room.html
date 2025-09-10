@@ -15,19 +15,19 @@ body { font-family: sans-serif; text-align: center; padding: 50px; }
 
 <script>
 const USER_ID = 'user-' + Math.random().toString(36).substr(2, 9);
-const API = 'https://backend.mondomaine.com'; // ton backend OVH
+const API = 'https://benoitcollado.com/api'; // ton backend OVH
 
 async function checkStatus() {
     try {
         const res = await fetch(`${API}/join`, {
-            method: 'POST',
+            method: 'GET',
             headers: { 'x-user-id': USER_ID }
         });
         const data = await res.json();
 
         if (data.status === 'allowed') {
             // Redirection vers site final avec token
-            window.location.href = `https://www.mondomaine.com/?token=${data.token}`;
+            window.location.href = `https://www.google.com/?token=${data.token}`;
         } else if (data.status === 'queued') {
             document.getElementById('message').innerText = 
                 `Vous êtes en attente. Position : ${data.position}`;

@@ -42,7 +42,7 @@ app.use((req, res, next) => {
 });
 
 // Endpoint pour rejoindre la waiting room
-app.get('/join', (req, res) => {
+app.get('/api/join', (req, res) => {
     const userId = req.queueId; // pris depuis le cookie
 
     if (activeUsers.has(userId)) {
@@ -63,7 +63,7 @@ app.get('/join', (req, res) => {
 });
 
 // Endpoint pour quitter / libérer une place
-app.get('/leave', (req, res) => {
+app.get('/api/leave', (req, res) => {
     const userId = req.userId;
 
     if (activeUsers.has(userId)) {
@@ -82,7 +82,7 @@ app.get('/leave', (req, res) => {
 });
 
 // Endpoint pour vérifier token (utilisé par Cloudflare Worker)
-app.get('/verify', (req, res) => {
+app.get('/api/verify', (req, res) => {
     const token = req.query.token;
     if (!token) return res.json({ valid: false });
 
@@ -98,9 +98,6 @@ app.get('/verify', (req, res) => {
     return res.json({ valid: true });
 });
 
-app.get('/', (req, res) => {
-    res.redirect('/join');
-});
 
 app.listen(PORT, () => {
     console.log(`Waiting Room backend running on port ${PORT}`);
